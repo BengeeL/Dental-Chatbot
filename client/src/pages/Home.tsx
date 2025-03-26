@@ -7,6 +7,13 @@ export default function Home() {
       </header>
 
       <section>
+        <p>Dental Care Expert Located in the Heart of Toronto</p>
+        <h2>Dental Care</h2>
+        <button>Book an Appointment</button>
+        <img src='patient-smile.avif' alt='Patient Smiling' />
+      </section>
+
+      <section>
         <h2>About Us</h2>
         <p>
           We provide the best dental care in the city with a team of experienced

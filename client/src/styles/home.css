@@ -1,0 +1,231 @@
+/* HEADER */
+
+header {
+  /* background-color: var(--tile-color); */
+  color: var(--text-color-light);
+  text-align: center;
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+  top: 0;
+  padding: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5em;
+  text-align: left;
+}
+
+/* HERO */
+
+.hero {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  color: var(--text-color-light);
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+}
+
+.hero-text {
+  position: absolute;
+  left: 10px;
+  z-index: 1;
+  margin-left: 20px;
+  backdrop-filter: blur(10px);
+  padding: 30px;
+}
+
+.hero-text p {
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0px 0px 5px var(--shadow-color);
+  border: 1px solid var(--text-color-light);
+  border-radius: 30px;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.hero-text h2 {
+  font-size: 10em;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0px 0px 5px var(--shadow-color);
+}
+
+.hero img {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero button {
+  background-color: var(--text-color-light);
+  color: var(--text-color-dark);
+  border-radius: 30px;
+  border: none;
+  padding: 20px 30px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0px 0px 5px var(--shadow-color);
+}
+
+.healthy-smile {
+  position: relative;
+  height: 95vh;
+  width: 100%;
+  margin: 0;
+  color: var(--text-color-dark);
+}
+
+.healthy-smile-text {
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-110%);
+  width: 60%;
+  background-color: var(--tile-color);
+  padding: 20px;
+  z-index: 2;
+}
+
+.healthy-smile img {
+  position: relative;
+  height: 100%;
+  width: 80vw;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.healthy-smile h2 {
+  font-size: 3em;
+  margin-top: 0;
+}
+
+.healthy-smile p {
+  font-size: 1em;
+  line-height: 1.6;
+}
+
+.healthy-smile button {
+  background-color: var(--text-color-dark);
+  color: var(--text-color-light);
+  border-radius: 30px;
+  border: none;
+  padding: 10px 30px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.oral-health {
+  position: relative;
+  height: 95vh;
+  width: 100%;
+  margin: 0;
+  color: var(--text-color-dark);
+  text-align: right;
+}
+
+.oral-health img {
+  position: relative;
+  height: 100%;
+  width: 80vw;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.oral-health h2 {
+  font-size: 3em;
+  margin-top: 0;
+  position: absolute;
+  top: 20px;
+  z-index: 2;
+  right: 30px;
+  width: 50vw;
+  text-align: left;
+  backdrop-filter: blur(10px);
+  color: var(--text-color-light);
+  padding: 50px;
+}
+
+.services {
+  position: absolute;
+  top: 45%;
+  left: 30px;
+  transform: translateY(-50%);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 0;
+  color: var(--text-color-dark);
+  z-index: 2;
+}
+
+.service {
+  background-color: var(--tile-color);
+  width: 30vw;
+  padding: 20px;
+}
+
+.service h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.service p,
+.service li {
+  font-size: 12px;
+  line-height: 15px;
+}
+
+.contact {
+  position: relative;
+  height: 95vh;
+  width: 100%;
+  margin: 0;
+  color: var(--text-color-dark);
+}
+
+.contact img {
+  position: relative;
+  height: 100%;
+  width: 100vw;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.contact .text {
+  position: absolute;
+  top: 100px;
+  right: 30px;
+  width: 50%;
+  background-color: var(--tile-color);
+  padding: 20px;
+  z-index: 2;
+}
+
+footer {
+  background-color: var(--tile-color);
+  color: var(--text-color);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+}

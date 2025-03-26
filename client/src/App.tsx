@@ -1,9 +1,17 @@
 import "@/styles/global.css";
+import Home from "./pages/Home";
+import Footer from "./components/Footer";
+import Chatbot from "./components/Chatbot";
 
 function App() {
   return (
-    <div>
-      <h1>Dental Chatbot Web App</h1>
+    <div className='page'>
+      <div className='page-content'>
+        <Home />
+        <Chatbot />
+      </div>
+
+      <Footer />
     </div>
   );
 }

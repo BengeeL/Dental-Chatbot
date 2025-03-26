@@ -5,6 +5,7 @@ export default function Home() {
         <h1>Welcome to Our Dental Clinic</h1>
         <p>Your smile is our priority</p>
       </header>
+
       <section>
         <h2>About Us</h2>
         <p>
@@ -12,6 +13,7 @@ export default function Home() {
           professionals.
         </p>
       </section>
+
       <section>
         <h2>Our Services</h2>
         <ul>
@@ -21,6 +23,7 @@ export default function Home() {
           <li>Oral Surgery</li>
         </ul>
       </section>
+
       <section>
         <h2>Contact Us</h2>
         <p>Phone: (123) 456-7890</p>

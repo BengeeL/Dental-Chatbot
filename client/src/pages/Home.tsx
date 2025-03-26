@@ -43,21 +43,63 @@ export default function Home() {
         </div>
       </section>
 
-      <section>
-        <h2>Our Services</h2>
-        <ul>
-          <li>General Dentistry</li>
-          <li>Cosmetic Dentistry</li>
-          <li>Orthodontics</li>
-          <li>Oral Surgery</li>
-        </ul>
+      <section className='oral-health'>
+        <img src='dental-tools.webp' alt='Dental Tools' />
+        {/* <h2>Elevating Oral Health with Personalized Services</h2>
+        <p>
+          Our clinic offers a wide range of services to cater to your dental
+          needs. We provide personalized services to ensure that you receive the
+          best treatment for your oral health. Our team of professionals are
+          here to help you achieve a healthy smile.
+        </p>
+        <button>Our Services</button> */}
+
+        <div className='services'>
+          <div className='service'>
+            <h3>General Dentistry</h3>
+            <p>
+              Regular dental checkups are essential for maintaining oral health.
+            </p>
+            <hr />
+            <li>Routine Check-ups & Teeth Cleaning</li>
+            <li>Tooth-Colored Fillings</li>
+            <li>Preventive Care</li>
+          </div>
+
+          <div className='service'>
+            <h3>Cosmetic Dentistry</h3>
+            <p>
+              Get a brighter smile with our professional teeth whitening
+              services.
+            </p>
+            <hr />
+            <li>Veneers & Smile Makeovers</li>
+            <li>Teeth Whitening</li>
+            <li>Invisalign</li>
+          </div>
+
+          <div className='service'>
+            <h3>Restorative Dentistry</h3>
+            <p>
+              Professional dental cleaning helps prevent gum disease and tooth
+              decay.
+            </p>
+            <hr />
+            <li>Dentures & Partials</li>
+            <li>Crowns & Bridges</li>
+            <li>Dental Implants</li>
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h2>Contact Us</h2>
-        <p>Phone: (123) 456-7890</p>
-        <p>Email: contact@dentalclinic.com</p>
-        <p>Address: 123 Dental St, Tooth City</p>
+      <section className='contact'>
+        <div className='text'>
+          <h2>Contact Us</h2>
+          <p>Phone: (123) 456-7890</p>
+          <p>Email: contact@dentalclinic.com</p>
+          <p>Address: 123 Dental St, Tooth City</p>
+        </div>
+        <img src='clinic-desk.jpeg' alt='Contact Us' />
       </section>
     </div>
   );

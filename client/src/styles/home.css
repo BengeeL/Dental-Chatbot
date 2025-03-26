@@ -1,0 +1,174 @@
+/* HEADER */
+
+header {
+  /* background-color: var(--tile-color); */
+  color: var(--text-color-light);
+  text-align: center;
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+  top: 0;
+  padding: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5em;
+  text-align: left;
+}
+
+/* HERO */
+
+.hero {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  color: var(--text-color-light);
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+}
+
+.hero-text {
+  position: absolute;
+  left: 10px;
+  z-index: 1;
+  margin-left: 20px;
+  backdrop-filter: blur(10px);
+  padding: 30px;
+}
+
+.hero-text p {
+  font-size: 1em;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0px 0px 5px var(--shadow-color);
+  border: 1px solid var(--text-color-light);
+  border-radius: 30px;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.hero-text h2 {
+  font-size: 10em;
+  margin: 0;
+  padding: 0;
+  text-shadow: 0px 0px 5px var(--shadow-color);
+}
+
+.hero img {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero button {
+  background-color: var(--text-color-light);
+  color: var(--text-color-dark);
+  border-radius: 30px;
+  border: none;
+  padding: 20px 30px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0px 0px 5px var(--shadow-color);
+}
+
+.healthy-smile {
+  position: relative;
+  height: 95vh;
+  width: 100%;
+  margin: 0;
+  color: var(--text-color-dark);
+}
+
+.healthy-smile-text {
+  position: absolute;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-110%);
+  width: 60%;
+  background-color: var(--tile-color);
+  padding: 20px;
+  z-index: 2;
+}
+
+.healthy-smile img {
+  position: relative;
+  height: 100%;
+  width: 80vw;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.healthy-smile h2 {
+  font-size: 3em;
+  margin-top: 0;
+}
+
+.healthy-smile p {
+  font-size: 1em;
+  line-height: 1.6;
+}
+
+.healthy-smile button {
+  background-color: var(--text-color-dark);
+  color: var(--text-color-light);
+  border-radius: 30px;
+  border: none;
+  padding: 10px 30px;
+  font-size: 1.2em;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+section h2 {
+  font-size: 2em;
+  margin-top: 0;
+}
+
+section p,
+section ul {
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+ul {
+  list-style-type: disc;
+  padding: 0;
+  padding-left: 30px;
+}
+
+ul li {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 2em;
+  }
+
+  section {
+    margin: 10px;
+    padding: 10px;
+  }
+}
+
+footer {
+  background-color: var(--tile-color);
+  color: var(--text-color);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import "@/styles/Chatbot.css";
 
 export default function Chatbot() {
   const [showChatbox, setShowChatbox] = useState(false);

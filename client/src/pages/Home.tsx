@@ -1,24 +1,46 @@
+import "@/styles/Home.css";
+
 export default function Home() {
   return (
     <div>
       <header>
-        <h1>Welcome to Our Dental Clinic</h1>
-        <p>Your smile is our priority</p>
+        <h1>
+          PASTE
+          <br />
+          DENTAL
+        </h1>
       </header>
 
-      <section>
-        <p>Dental Care Expert Located in the Heart of Toronto</p>
-        <h2>Dental Care</h2>
-        <button>Book an Appointment</button>
-        <img src='patient-smile.avif' alt='Patient Smiling' />
+      <section className='hero'>
+        <div className='hero-text'>
+          <p>Dental Care Expert Located in the Heart of Toronto</p>
+          <h2>
+            Dental
+            <br />
+            Care
+          </h2>
+          <button>Book an Appointment</button>
+        </div>
+        <img src='clinic-entrance.webp' alt='Clinic Entrance' />
       </section>
 
-      <section>
-        <h2>About Us</h2>
-        <p>
-          We provide the best dental care in the city with a team of experienced
-          professionals.
-        </p>
+      <section className='healthy-smile'>
+        <img
+          src='clinic-chair.jpeg'
+          alt='Smiling Patient
+        '
+        />
+
+        <div className='healthy-smile-text'>
+          <h2>Crafting Healthy Smiles One Service at a Time</h2>
+          <p>
+            Our clients are our priority, we offer quality dental services with
+            a team of specialist. We provide the best dental care in the city
+            with a team of experienced professionals. Your smile is our
+            priority.
+          </p>
+          <button>About Clinic</button>
+        </div>
       </section>
 
       <section>

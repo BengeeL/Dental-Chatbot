@@ -3,3 +3,5 @@ This final project was built as part of the Cloud Machine Learning class. The go
 
 ## Latest Website Design Overview
 ![image](https://github.com/user-attachments/assets/d56e0ca8-1851-43f3-8b24-d602c82c29d3)
+
+Note: The images are from Paste Dental, a real dentist's office in Toronto. ![Visit Paste Dental](https://paste.dental/)

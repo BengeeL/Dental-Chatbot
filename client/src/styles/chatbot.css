@@ -10,10 +10,11 @@
   width: 300px;
   height: 400px;
   background-color: var(--background-color);
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 15px 15px 0 0;
+  box-shadow: 0 0 5px var(--shadow-color);
   display: flex;
   flex-direction: column;
+  z-index: 100;
 }
 
 .chatbot-chat-button {
@@ -35,8 +36,8 @@
 .chatbot-header {
   background-color: var(--primary-color);
   color: var(--tile-color);
-  padding: 10px;
-  border-radius: 8px 8px 0 0;
+  padding: 0px 10px;
+  border-radius: 10px 10px 0 0;
   display: flex;
   justify-content: space-between;
 }

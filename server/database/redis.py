@@ -8,7 +8,7 @@ redis_client = None
 # Initialize Redis connection
 async def init_redis():
     global redis_client
-    redis_creds = get_secret("rediss")
+    redis_creds = get_secret("redis")
     try:
         redis_client = redis.Redis(host=redis_creds["host"],
                                    port=redis_creds["port"],

@@ -1,28 +1,19 @@
 import { useEffect, useState, useRef } from "react";
 import "@/styles/Chatbot.css";
+import axios from "axios";
+
+interface Message {
+  id: number;
+  text: string;
+  time: string;
+  date: string;
+  sender: "user" | "bot";
+  status?: "sent" | "received" | "seen" | "ok";
+}
 
 export default function Chatbot() {
   const [showChatbox, setShowChatbox] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hi! How can we help you today?",
-      sender: "bot",
-      time: "12:00",
-    },
-    {
-      id: 2,
-      text: "I have a question about my appointment",
-      sender: "user",
-      time: "12:01",
-    },
-    {
-      id: 3,
-      text: "Sure, what would you like to know?",
-      sender: "bot",
-      time: "12:02",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessages, setNewMessages] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,24 +27,56 @@ export default function Chatbot() {
       return;
     }
 
-    const newMessage = {
-      id: messages.length + 1,
+    const newMessage: Message = {
+      id: Date.now(), // Use a unique timestamp as the ID
       text: newMessages,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: new Date().toLocaleDateString(),
       sender: "user",
-      time: "12:03",
+      status: "sent",
     };
 
     setMessages([...messages, newMessage]);
+    const message = newMessages;
     setNewMessages("");
+    setTimeout(() => {
+      botResponse(message);
+    }, 2000);
   }
 
-  function botResponse() {
-    const botMessage = {
-      id: messages.length + 2,
-      text: "I'm a bot. I don't have the answer to that question.",
-      sender: "bot",
-      time: "12:04",
-    };
+  async function botResponse(message: string) {
+    const response = await axios.post("http://localhost:8085/chat", {
+      message: message,
+    });
+    let botMessage: Message;
+
+    if (response.data.status === "ok") {
+      botMessage = {
+        id: Date.now() + 1, // Ensure a unique ID for the bot message
+        text: response.data.text,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        date: new Date().toLocaleDateString(),
+        sender: "bot",
+      };
+    } else {
+      console.error("Error: ", response.data.text);
+      botMessage = {
+        id: Date.now() + 1, // Ensure a unique ID for the bot message
+        text: "Sorry, I couldn't understand your message.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        date: new Date().toLocaleDateString(),
+        sender: "bot",
+      };
+    }
 
     setMessages((prevMessages) => [...prevMessages, botMessage]);
   }
@@ -109,7 +132,6 @@ export default function Chatbot() {
               onKeyUp={(e) => {
                 if (e.key === "Enter") {
                   addMessage();
-                  setTimeout(botResponse, 2000);
                 }
               }}
             />
@@ -117,7 +139,6 @@ export default function Chatbot() {
               className='send-message-button'
               onClick={() => {
                 addMessage();
-                setTimeout(botResponse, 2000);
               }}
             >
               Send

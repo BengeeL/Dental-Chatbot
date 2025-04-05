@@ -1,7 +1,7 @@
 import os
 
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from contextlib import asynccontextmanager
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +12,8 @@ from auth.auth import validate_token
 from models.Models import User
 from auth.auth import router as auth_router
 from utils.aws_utils import get_secret
+
+from datetime import datetime
 
 jwt_secret = get_secret(os.getenv("supabase_secret_name"))
 SUPABASE_JWT_SECRET = jwt_secret["JWT_SECRET"]
@@ -32,7 +34,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[ "http://127.0.0.1:5173", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -83,5 +85,15 @@ async def read_root(connection=Depends(get_postgres_connection)):
         }
 
 
+@app.post("/chat")
+async def get_answer(request: Request):
+    body = await request.json() 
+    question = body.get("message") 
+    
+    return {
+        "text": "The answer to your question: " + question,
+        "status": "ok",
+    }
+
 if __name__ == '__main__':
-    uvicorn.run(app, port=8080, host='0.0.0.0')
+    uvicorn.run(app, port=8085)

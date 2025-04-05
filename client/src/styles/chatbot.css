@@ -7,8 +7,12 @@
   position: fixed;
   bottom: 100px;
   right: 20px;
-  width: 300px;
-  height: 400px;
+  min-width: 300px;
+  max-width: 500px;
+  min-height: 400px;
+  max-height: 800px;
+  height: 60vh;
+  width: 20vw;
   background-color: var(--background-color);
   border-radius: 15px 15px 0 0;
   box-shadow: 0 0 5px var(--shadow-color);

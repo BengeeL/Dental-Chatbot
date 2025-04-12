@@ -14,29 +14,71 @@ from database.redis import get_redis_client
 from models.Models import User, RefreshRequest, AuthUser, ResendOTPRequest, ResetPasswordRequest, UpdatePasswordRequest
 import logging
 from utils.aws_utils import get_secret
+from utils.supabase_utils import validate_supabase_credentials
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+# Get Supabase secret name from environment variable
 supabase_secret_name = os.getenv("supabase_secret_name")
 if not supabase_secret_name:
     raise RuntimeError("Missing environment variable: supabase_secret_name")
-supabase_values = get_secret(supabase_secret_name)
-# Initialize Supabase client
-SUPABASE_URL = supabase_values["SUPABASE_URL"]
-SUPABASE_KEY = supabase_values["SUPABASE_SERVICE_ROLE_KEY"]  # Use service role key for DB operations
-JWT_SECRET = supabase_values["JWT_SECRET"]  # Used to sign internal JWTs
 
+# Retrieve credentials from AWS Secrets Manager
+try:
+    supabase_values = get_secret(supabase_secret_name)
+    logger.info(f"Retrieved Supabase credentials from AWS Secrets Manager")
+    
+    # Validate the structure and format of the credentials
+    is_valid, validation_message = validate_supabase_credentials(supabase_values)
+    
+    if not is_valid:
+        logger.error(f"Supabase credential validation failed: {validation_message}")
+        raise ValueError(f"Invalid Supabase credentials: {validation_message}")
+    
+    logger.info(f"Supabase credentials validated: {validation_message}")
+    
+    # Initialize Supabase client with validated credentials
+    SUPABASE_URL = supabase_values["SUPABASE_URL"]
+    SUPABASE_KEY = supabase_values["SUPABASE_SERVICE_ROLE_KEY"]
+    JWT_SECRET = supabase_values["JWT_SECRET"]
+    
+    # Log credential details (safely)
+    logger.info(f"Using Supabase URL: {SUPABASE_URL}")
+    logger.info(f"API Key length: {len(SUPABASE_KEY)} characters")
+    logger.info(f"JWT Secret length: {len(JWT_SECRET)} characters")
+    
+except Exception as e:
+    logger.critical(f"Failed to initialize Supabase credentials: {str(e)}", exc_info=True)
+    raise
+
+# Confirm requirements are met
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Supabase environment variables are not set")
+    raise ValueError("Supabase URL and API key are required")
 
-SUPABASE_JWT_SECRET = supabase_values["JWT_SECRET"]
+SUPABASE_JWT_SECRET = JWT_SECRET
 if SUPABASE_JWT_SECRET is None:
-    raise ValueError("JWT_SECRET environment variable is not set")
+    raise ValueError("JWT_SECRET is required")
 
 auth_scheme = HTTPBearer()
 router = APIRouter()
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Initialize Supabase client with robust error handling
+try:
+    logger.info(f"Initializing Supabase client with URL: {SUPABASE_URL}")
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    logger.info("Supabase client initialized successfully")
+    
+    # Optional: Make a simple query to verify the connection works
+    try:
+        result = supabase.table("users").select("count").limit(1).execute()
+        logger.info(f"Supabase connection test successful")
+    except Exception as query_error:
+        logger.warning(f"Supabase connection test query failed: {str(query_error)}")
+        # Continue anyway as this is just a verification
+except Exception as e:
+    logger.critical(f"Failed to initialize Supabase client: {str(e)}", exc_info=True)
+    raise RuntimeError(f"Supabase initialization failed: {str(e)}")
 
 
 def validate_token(auth: HTTPAuthorizationCredentials = Security(auth_scheme)) -> User:

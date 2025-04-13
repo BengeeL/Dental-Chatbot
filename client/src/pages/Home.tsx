@@ -1,6 +1,10 @@
 import "@/styles/Home.css";
 
-export default function Home() {
+interface HomeProps {
+  onBookAppointment: () => void;
+}
+
+export default function Home({ onBookAppointment }: HomeProps) {
   return (
     <div>
       <header>
@@ -19,7 +23,7 @@ export default function Home() {
             <br />
             Care
           </h2>
-          <button>Book an Appointment</button>
+          <button onClick={onBookAppointment}>Book an Appointment</button>
         </div>
         <img src='clinic-entrance.webp' alt='Clinic Entrance' />
       </section>
@@ -45,14 +49,7 @@ export default function Home() {
 
       <section className='oral-health'>
         <img src='dental-tools.webp' alt='Dental Tools' />
-        {/* <h2>Elevating Oral Health with Personalized Services</h2>
-        <p>
-          Our clinic offers a wide range of services to cater to your dental
-          needs. We provide personalized services to ensure that you receive the
-          best treatment for your oral health. Our team of professionals are
-          here to help you achieve a healthy smile.
-        </p>
-        <button>Our Services</button> */}
+        <h2>Elevating Oral Health with Personalized Services</h2>
 
         <div className='services'>
           <div className='service'>

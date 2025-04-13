@@ -11,11 +11,27 @@ postgres_pool = None
 # Initialize PostgreSQL connection pool
 async def init_postgres():
     global postgres_pool
-    pg_creds = get_secret("postgres")
     try:
+        # First try to get from AWS Secrets Manager
+        try:
+            pg_creds = get_secret("postgres")
+        except Exception as e:
+            print(f"Could not get PostgreSQL credentials from AWS: {e}")
+            # Fallback to environment variables
+            pg_creds = {
+                "host": os.environ.get("POSTGRES_HOST", "localhost"),
+                "port": os.environ.get("POSTGRES_PORT", "5432"),
+                "username": os.environ.get("POSTGRES_USERNAME", "postgres"),
+                "password": os.environ.get("POSTGRES_PASSWORD", "postgres")
+            }
+            print("Using PostgreSQL credentials from environment variables")
+            
+        # Convert port to int
+        port = int(pg_creds["port"])
+            
         postgres_pool = await asyncpg.create_pool(
             host=pg_creds["host"],
-            port=pg_creds["port"],
+            port=port,
             user=pg_creds["username"],
             password=pg_creds["password"],
             database="defaultdb",
@@ -24,6 +40,8 @@ async def init_postgres():
             command_timeout=120,
             timeout=60
         )
+        
+        print(f"Connected to PostgreSQL at {pg_creds['host']}:{port}")
     except Exception as e:
         print(f"Error creating postgres pool: {e}")
         raise

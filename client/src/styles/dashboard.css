@@ -1,0 +1,86 @@
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  width: 100%;
+}
+
+.dashboard-tile {
+  border-radius: 15px;
+  border: 1px solid #e9ecef;
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  width: 100%;
+  margin-top: 50px;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboad-title {
+  padding: 5px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.button {
+  background-color: #26a57f;
+  border-color: #1f9572;
+  border-radius: 20px;
+  /* alight to the right */
+  float: right;
+}
+
+.button:hover {
+  background-color: #1f9572;
+  border-color: #26a57f;
+}
+
+.appointment-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 15px;
+  border: 1px solid #e9ecef;
+  backdrop-filter: blur(10px);
+  background-color: #ffffff;
+  margin: 10px 0;
+}
+
+.appointment-tile h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.appointment-tile p {
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+}

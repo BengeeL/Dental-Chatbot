@@ -9,17 +9,17 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 dynamodb = None
 
-# DynamoDB table name for chat history
+# Get DynamoDB table name from Chalice config
 CHAT_HISTORY_TABLE = os.environ.get('DYNAMODB_TABLE', 'dental-chat-history')
 
 def init_dynamodb():
     """Initialize DynamoDB client"""
     global dynamodb
     try:
-        # Use Lambda environment AWS_REGION or get from our custom env var
-        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
+        # Use the AWS_REGION from Chalice config
+        region = os.environ.get('AWS_REGION', 'ca-central-1')
         
-        # Create DynamoDB resource using Lambda's IAM role
+        # Create DynamoDB resource using explicit region
         dynamodb = boto3.resource('dynamodb', region_name=region)
         
         # Check if table exists, create if it doesn't

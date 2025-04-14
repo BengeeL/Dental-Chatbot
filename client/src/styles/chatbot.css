@@ -56,6 +56,22 @@
   justify-content: space-between;
 }
 
+.chatbot-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chatbot-logo svg {
+  width: 28px;
+  height: 28px;
+  fill: var(--text-color-light);
+}
+
+.chatbot-logo h3 {
+  margin: 0;
+}
+
 .close-chat {
   cursor: pointer;
   background-color: transparent;
@@ -263,10 +279,11 @@
   cursor: not-allowed;
 }
 
-.listen-button::after {
-  content: ' 🔊';
-  font-size: 0.8rem;
-  margin-left: 2px;
+.listen-button svg {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  fill: currentColor;
 }
 
 .chatbot-controls-header {
@@ -295,6 +312,63 @@
   user-select: none;
 }
 
+/* Modern toggle switch for auto-speak */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  background-color: rgba(255,255,255,0.15);
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-right: 8px;
+  user-select: none;
+  gap: 8px;
+}
+
+.toggle-switch__track {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 18px;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 18px;
+  transition: all 0.3s ease;
+}
+
+.toggle-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch input:checked + .toggle-switch__track {
+  background-color: var(--secondary-light);
+}
+
+.toggle-switch input:checked + .toggle-switch__track .toggle-switch__thumb {
+  transform: translateX(18px);
+}
+
+.toggle-switch__label {
+  color: white;
+  font-size: 0.8em;
+}
+
+/* Updated voice recording button */
 .voice-input-button {
   background-color: var(--secondary-color);
   color: var(--text-color-light);
@@ -302,27 +376,33 @@
   border-radius: 5px;
   padding: 5px 12px;
   cursor: pointer;
-  font-size: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.voice-input-button svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
 }
 
 .voice-input-button.recording {
   background-color: var(--danger-color);
   animation: pulse 1.5s infinite;
+  box-shadow: 0 0 0 rgba(244, 67, 54, 0.4);
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
+.voice-input-button.recording svg {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .voice-input-button:hover {
@@ -332,4 +412,17 @@
 .voice-input-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Enhanced pulse animation for recording button */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
 }

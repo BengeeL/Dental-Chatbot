@@ -7,27 +7,28 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 lex_client = None
 
-# AWS Lambda environment already has AWS credentials via IAM roles
-# so we don't need to explicitly fetch them from Secrets Manager
-
 def init_lex_client():
-    """Initialize Amazon Lex client using AWS Lambda's environment variables or IAM role"""
+    """Initialize Amazon Lex client using Chalice environment variables"""
     global lex_client
     try:
-        # Use Lambda environment AWS_REGION or get from our custom env var
-        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
+        # Get region from Lambda environment or fallback to DEFAULT_REGION
+        # This works in both local and Lambda environments
+        region = os.environ.get('AWS_LAMBDA_FUNCTION_REGION', 
+                  os.environ.get('DEFAULT_REGION', 'ca-central-1'))
         
-        # Store Lex bot configuration
-        if not os.environ.get('LEX_BOT_ID'):
-            # Only set these if not already set during deployment
-            os.environ['LEX_BOT_ID'] = os.environ.get('LEX_BOT_ID', '')
-            os.environ['LEX_BOT_ALIAS_ID'] = os.environ.get('LEX_BOT_ALIAS_ID', '')
-            os.environ['LEX_BOT_LOCALE_ID'] = os.environ.get('LEX_BOT_LOCALE_ID', 'en_CA')
+        # Get Lex configuration from environment (Chalice config)
+        bot_id = os.environ.get('LEX_BOT_ID')
+        bot_alias_id = os.environ.get('LEX_BOT_ALIAS_ID')
+        locale_id = os.environ.get('LEX_BOT_LOCALE_ID', 'en_US')
+        
+        if not bot_id or not bot_alias_id:
+            logger.error("Missing LEX_BOT_ID or LEX_BOT_ALIAS_ID in environment variables")
+            return False
             
-        # Create Lex client using Lambda's IAM role
+        # Create Lex client using explicit region
         lex_client = boto3.client('lexv2-runtime', region_name=region)
         
-        logger.info(f"Lex client initialized for bot: {os.environ['LEX_BOT_ID']} in region {region}")
+        logger.info(f"Lex client initialized for bot: {bot_id} in region {region}")
         return True
     except Exception as e:
         logger.error(f"Failed to initialize Lex client: {str(e)}")

@@ -11,10 +11,11 @@ def init_polly_client():
     """Initialize Amazon Polly client"""
     global polly_client
     try:
-        # Use Lambda environment AWS_REGION or get from our custom env var
-        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
+        # Get region from Lambda environment or fallback to DEFAULT_REGION
+        region = os.environ.get('AWS_LAMBDA_FUNCTION_REGION', 
+                  os.environ.get('DEFAULT_REGION', 'ca-central-1'))
         
-        # Create Polly client using Lambda's IAM role
+        # Create Polly client using explicit region
         polly_client = boto3.client('polly', region_name=region)
         
         logger.info(f"Polly client initialized in region {region}")

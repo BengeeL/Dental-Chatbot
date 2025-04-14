@@ -8,17 +8,17 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 s3_client = None
 
-# S3 bucket name for conversation storage
+# Get S3 bucket name from Chalice config
 CONVERSATION_BUCKET = os.environ.get('S3_BUCKET_NAME', 'dental-chat-conversations')
 
 def init_s3_client():
     """Initialize S3 client"""
     global s3_client
     try:
-        # Use Lambda environment AWS_REGION or get from our custom env var
-        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
+        # Use the AWS_REGION from Chalice config
+        region = os.environ.get('AWS_REGION', 'ca-central-1')
         
-        # Create S3 client using Lambda's IAM role
+        # Create S3 client using explicit region
         s3_client = boto3.client('s3', region_name=region)
         
         # Ensure the bucket exists

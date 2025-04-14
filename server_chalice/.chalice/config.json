@@ -8,9 +8,9 @@
         "LEX_BOT_ID": "XPYCUV8WOV",
         "LEX_BOT_ALIAS_ID": "TSTALIASID",
         "LEX_BOT_LOCALE_ID": "en_US",
+        "DEFAULT_REGION": "ca-central-1",
         "DYNAMODB_TABLE": "dental-chat-history",
-        "S3_BUCKET_NAME": "dental-chat-conversations",
-        "DEFAULT_REGION": "ca-central-1"
+        "S3_BUCKET_NAME": "dental-chat-conversations"
       },
       "iam_policy_file": "iam-policy.json"
     }

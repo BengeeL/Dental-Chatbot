@@ -13,27 +13,22 @@
     {
       "Effect": "Allow",
       "Action": [
-        "lex:RecognizeText",
-        "lex:RecognizeUtterance",
-        "lex:PutSession",
-        "lex:GetSession",
-        "lex:DeleteSession"
-      ],
-      "Resource": "arn:aws:lex:*:*:bot-alias/*/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "polly:SynthesizeSpeech"
+        "lex:*"
       ],
       "Resource": "*"
     },
     {
       "Effect": "Allow",
       "Action": [
-        "transcribe:StartTranscriptionJob",
-        "transcribe:GetTranscriptionJob",
-        "transcribe:DeleteTranscriptionJob"
+        "polly:SynthesizeSpeech",
+        "polly:DescribeVoices"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "transcribe:*"
       ],
       "Resource": "*"
     },

@@ -349,17 +349,21 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           const base64data = reader.result?.toString().split(',')[1];
           
           if (base64data) {
-            setIsLoading(true);
+            console.log("Audio converted to base64, size:", base64data.length);
             
             try {
-              // Send audio to transcribe endpoint - updated to use config
+              // Send audio to transcribe endpoint
+              console.log("Sending audio to transcribe endpoint...");
               const transcribeResponse = await axios.post(`${config.API_BASE_URL}/transcribe`, {
                 audio: base64data,
                 content_type: 'audio/webm'
               });
               
+              console.log("Transcribe response:", transcribeResponse.data);
+              
               if (transcribeResponse.data.text) {
                 const transcribedText = transcribeResponse.data.text;
+                console.log("Transcribed text:", transcribedText);
                 
                 // Add user message with transcribed text
                 const newMessage: Message = {
@@ -376,13 +380,44 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
                 
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
                 botResponse(transcribedText);
+              } else if (transcribeResponse.data.error) {
+                console.error("Transcription error:", transcribeResponse.data.error);
+                setIsLoading(false);
+                
+                // Add an error message to the chat
+                const errorMessage: Message = {
+                  id: Date.now(),
+                  text: "Sorry, I couldn't understand the audio. Please try again or type your message.",
+                  time: new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  date: new Date().toLocaleDateString(),
+                  sender: "bot",
+                };
+                
+                setMessages((prevMessages) => [...prevMessages, errorMessage]);
               } else {
                 setIsLoading(false);
-                console.error("Could not transcribe audio");
+                console.error("Empty transcription result");
               }
             } catch (error) {
               setIsLoading(false);
               console.error("Error transcribing audio:", error);
+              
+              // Add an error message to the chat
+              const errorMessage: Message = {
+                id: Date.now(),
+                text: "Sorry, there was an error processing your audio. Please try again later or type your message.",
+                time: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                date: new Date().toLocaleDateString(),
+                sender: "bot",
+              };
+              
+              setMessages((prevMessages) => [...prevMessages, errorMessage]);
             }
           }
         };
@@ -403,6 +438,9 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
+      // Add visual indication that processing is happening
+      setIsLoading(true);
     }
   };
 
@@ -456,15 +494,24 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
       {showChatbox && (
         <div className='chatbot-container'>
           <div className='chatbot-header'>
-            <h3>Dental Assistant</h3>
+            <div className="chatbot-logo">
+              <svg viewBox="0 0 24 24">
+                <path d="M19 2H5C3.9 2 3 2.9 3 4V18C3 19.1 3.9 20 5 20H9L12 23L15 20H19C20.1 20 21 19.1 21 18V4C21 2.9 20.1 2 19 2M13.88 12.88L12 17L10.12 12.88L6 11L10.12 9.12L12 5L13.88 9.12L18 11L13.88 12.88M15.25 9.5L14.04 7.04L11.5 5.75L14.04 4.46L15.25 2L16.46 4.46L19 5.75L16.46 7.04L15.25 9.5M18.5 15.5L17.9 14.4L16.8 13.8L17.9 13.2L18.5 12L19.1 13.2L20.2 13.8L19.1 14.4L18.5 15.5Z" />
+              </svg>
+              <h3>Dental Assistant</h3>
+            </div>
             <div className="chatbot-controls-header">
-              <label className="auto-speak-toggle">
+              {/* Modern toggle switch for auto-speak */}
+              <label className="toggle-switch">
+                <span className="toggle-switch__label">Auto-speak</span>
                 <input 
                   type="checkbox" 
                   checked={autoSpeakResponses} 
                   onChange={() => setAutoSpeakResponses(!autoSpeakResponses)} 
                 />
-                <span className="toggle-label">Auto-speak</span>
+                <div className="toggle-switch__track">
+                  <div className="toggle-switch__thumb"></div>
+                </div>
               </label>
               <button className='close-chat' onClick={() => updateShowChatbox(false)}>
                 X
@@ -491,6 +538,9 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
                       aria-label="Listen to message"
                     >
                       {isPlayingAudio === message.id ? 'Playing...' : 'Listen'}
+                      <svg viewBox="0 0 24 24">
+                        <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                      </svg>
                     </button>
                   )}
                 </div>
@@ -538,8 +588,17 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
               className={`voice-input-button ${isRecording ? 'recording' : ''}`}
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isLoading}
+              title={isRecording ? "Stop recording" : "Start recording"}
             >
-              {isRecording ? '🔴 Stop' : '🎤'}
+              {isRecording ? (
+                <svg viewBox="0 0 24 24">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4M9,9V15H15V9" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24">
+                  <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
+                </svg>
+              )}
             </button>
             <button
               className='send-message-button'

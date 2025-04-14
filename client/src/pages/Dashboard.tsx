@@ -74,14 +74,6 @@ export default function Dashboard() {
           patient: "John Doe",
         },
       ]);
-      setScheduleModifyAppointment({
-        id: "4",
-        date: "2023-10-10",
-        time: "02:00 PM",
-        status: "Scheduled",
-        dentist: "Dr. White",
-        patient: "John Doe",
-      });
     };
     fetchAppointments();
   }, []);
@@ -147,47 +139,84 @@ export default function Dashboard() {
 
           <div className='dashboard-right'>
             <div className='dashboard-tile'>
-              <h2 className='dashboad-title'>Schedule/Modify Appointment</h2>
+              <h2 className='dashboad-title'>
+                {ScheduleModifyAppointment
+                  ? "Modify Appointment"
+                  : "Schedule Appointment"}
+              </h2>
 
               <div className='dashboard-list'>
-                {ScheduleModifyAppointment ? (
-                  <div className='dashboard-list-item'>
-                    <p>{ScheduleModifyAppointment.date}</p>
-                    <p>{ScheduleModifyAppointment.time}</p>
-                    <p>{ScheduleModifyAppointment.status}</p>
-                    <p>{ScheduleModifyAppointment.dentist}</p>
-                    <p>{ScheduleModifyAppointment.patient}</p>
+                <form>
+                  <div className='form-group'>
+                    <label htmlFor='date'>Date</label>
+                    <input
+                      type='date'
+                      className='form-control'
+                      id='date'
+                      defaultValue={ScheduleModifyAppointment?.date || ""}
+                      onChange={(e) => {
+                        // Logic to handle date change
+                        console.log("Date changed to: ", e.target.value);
+                      }}
+                    />
                   </div>
-                ) : (
-                  <p>No appointment selected</p>
-                )}
+                  <div className='form-group mt-3'>
+                    <label htmlFor='time'>Time</label>
+                    <input
+                      type='time'
+                      className='form-control'
+                      id='time'
+                      defaultValue={ScheduleModifyAppointment?.time || ""}
+                      onChange={(e) => {
+                        // Logic to handle time change
+                        console.log("Time changed to: ", e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className='form-group mt-3'>
+                    <label htmlFor='dentist'>Dentist</label>
+                    <input
+                      type='text'
+                      className='form-control'
+                      id='dentist'
+                      defaultValue={ScheduleModifyAppointment?.dentist || ""}
+                      onChange={(e) => {
+                        // Logic to handle dentist change
+                        console.log("Dentist changed to: ", e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className='form-group mt-3'>
+                    <label htmlFor='status'>Status</label>
+                    <select
+                      className='form-control'
+                      id='status'
+                      defaultValue={
+                        ScheduleModifyAppointment?.status || "Scheduled"
+                      }
+                      onChange={(e) => {
+                        // Logic to handle status change
+                        console.log("Status changed to: ", e.target.value);
+                      }}
+                    >
+                      <option value='Scheduled'>Scheduled</option>
+                      <option value='Completed'>Completed</option>
+                      <option value='Cancelled'>Cancelled</option>
+                    </select>
+                  </div>
+                </form>
                 <button
-                  className='btn btn-primary'
+                  className='btn btn-primary mt-3'
                   onClick={() => {
                     // Logic to schedule or modify an appointment
                     // This could be a modal or a redirect to another page
                     console.log("Schedule/Modify Appointment clicked");
                   }}
                 >
-                  Schedule/Modify Appointment
+                  {ScheduleModifyAppointment
+                    ? "Modify Appointment"
+                    : "Schedule Appointment"}
                 </button>
-                <div className='dashboard-list-item'>
-                  <p>Appointment Details</p>
-                  <p>Appointment ID: {ScheduleModifyAppointment?.id}</p>
-                  <p>Patient ID: {currentAuthUser?.id}</p>
-                  <p>Patient Name: {currentAuthUser?.name}</p>
-                  <p>Patient Email: {currentAuthUser?.email}</p>
-                  <p>Patient Role: {currentAuthUser?.role}</p>
-                  <p>Appointment Status: {ScheduleModifyAppointment?.status}</p>
-                  <p>
-                    Appointment Dentist: {ScheduleModifyAppointment?.dentist}
-                  </p>
-                  <p>
-                    Appointment Patient: {ScheduleModifyAppointment?.patient}
-                  </p>
-                  <p>Appointment Date: {ScheduleModifyAppointment?.date}</p>
-                  <p>Appointment Time: {ScheduleModifyAppointment?.time}</p>
-                </div>
               </div>
             </div>
           </div>

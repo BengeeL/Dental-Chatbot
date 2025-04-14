@@ -9,6 +9,7 @@ interface Message {
   date: string;
   sender: "user" | "bot";
   status?: "sent" | "received" | "seen" | "ok";
+  audio?: string; // Base64 encoded audio
 }
 
 interface ChatbotProps {
@@ -25,15 +26,23 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   const initialMessageSentRef = useRef(false);
   const welcomeMessageRef = useRef<Message | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Voice recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+
+  // Auto speech toggle
+  const [autoSpeakResponses, setAutoSpeakResponses] = useState(false);
 
   // Generate or retrieve a session ID when the component mounts
   useEffect(() => {
-    // Try to get existing session ID from localStorage
     const storedSessionId = localStorage.getItem('dental_chat_session');
     if (storedSessionId) {
       setSessionId(storedSessionId);
     } else {
-      // Generate a new session ID
       const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
       localStorage.setItem('dental_chat_session', newSessionId);
@@ -63,7 +72,6 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   const openChatbox = useCallback(() => {
     setShowChatbox(true);
     
-    // Add welcome message if there are no messages
     if (messages.length === 0) {
       const welcomeMessage = createWelcomeMessage();
       welcomeMessageRef.current = welcomeMessage;
@@ -80,11 +88,66 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     }
   }, [open, openChatbox]);
 
+  // Function to convert text to speech using Amazon Polly - define BEFORE botResponse
+  const textToSpeech = useCallback(async (text: string, messageId: number) => {
+    try {
+      setIsPlayingAudio(messageId);
+      console.log("Requesting speech synthesis for:", text.substring(0, 30) + "...");
+      
+      const response = await axios.post("http://localhost:8000/speech", {
+        text: text,
+        voice: "Joanna"
+      });
+      
+      if (response.data.audio) {
+        console.log("Received audio data, length:", response.data.audio.length);
+        
+        // Create audio element
+        const audio = new Audio(`data:audio/mp3;base64,${response.data.audio}`);
+        audioRef.current = audio;
+        
+        // Add event listeners for debugging
+        audio.oncanplay = () => console.log("Audio can play now");
+        audio.onerror = (e) => console.error("Audio error:", e);
+        audio.onended = () => {
+          console.log("Audio playback ended");
+          setIsPlayingAudio(null);
+        };
+        
+        // Play with user interaction handling
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log("Audio playback started successfully");
+            })
+            .catch(error => {
+              console.error("Playback prevented by browser:", error);
+              // Reset playing state on error
+              setIsPlayingAudio(null);
+              
+              // Alert the user about autoplay restrictions if that's the issue
+              if (error.name === "NotAllowedError") {
+                console.warn("Audio playback was prevented due to browser autoplay policy");
+                // You could show a UI notification here if needed
+              }
+            });
+        }
+      } else {
+        console.error("No audio data in response");
+        setIsPlayingAudio(null);
+      }
+    } catch (error) {
+      console.error("Error converting text to speech:", error);
+      setIsPlayingAudio(null);
+    }
+  }, []);
+
   // Send message to bot and get response
   const botResponse = useCallback(async (message: string) => {
     try {
-      // Update the axios request with proper CORS configuration
-      const response = await axios.post("http://localhost:8085/chat", {
+      const response = await axios.post("http://localhost:8000/chat", {
         message: message,
         session_id: sessionId
       }, {
@@ -92,12 +155,11 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        withCredentials: false // Set to false for development
+        withCredentials: false
       });
       
       let botMessage: Message;
 
-      // Update the session ID if returned
       if (response.data.session_id) {
         setSessionId(response.data.session_id);
         localStorage.setItem('dental_chat_session', response.data.session_id);
@@ -114,6 +176,16 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           date: new Date().toLocaleDateString(),
           sender: "bot",
         };
+
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        
+        // Auto-speak the response if enabled - moved after adding message to state
+        if (autoSpeakResponses) {
+          console.log("Auto-speak is enabled, playing audio...");
+          setTimeout(() => {
+            textToSpeech(response.data.text, botMessage.id);
+          }, 800); // Increased timeout to ensure message is rendered first
+        }
       } else {
         console.error("Error: ", response.data.text);
         botMessage = {
@@ -126,13 +198,12 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           date: new Date().toLocaleDateString(),
           sender: "bot",
         };
+        
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
       }
-
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
       console.error("Error communicating with the server:", error);
       
-      // Add an error message to the chat
       const errorMessage: Message = {
         id: Date.now() + 1,
         text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
@@ -146,24 +217,21 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
       
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
     } finally {
-      setIsLoading(false); // Hide loading indicator
+      setIsLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, autoSpeakResponses, textToSpeech]);
 
-  // Handle initial message if provided (e.g., from Book Appointment button)
+  // Handle initial message if provided
   useEffect(() => {
     if (initialMessage && showChatbox && !initialMessageSentRef.current) {
-      // Mark that we've processed this message
       initialMessageSentRef.current = true;
       
-      // Make sure we have a welcome message first
       if (messages.length === 0) {
         const welcomeMessage = createWelcomeMessage();
         welcomeMessageRef.current = welcomeMessage;
         setMessages([welcomeMessage]);
       }
       
-      // Add a small delay before sending the initial message to allow the welcome message to be seen
       setTimeout(() => {
         const initialUserMessage: Message = {
           id: Date.now(),
@@ -183,7 +251,6 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     }
   }, [initialMessage, showChatbox, messages, createWelcomeMessage, botResponse]);
 
-  // Reset the initialMessageSentRef when initialMessage changes or chatbox closes
   useEffect(() => {
     if (!showChatbox) {
       initialMessageSentRef.current = false;
@@ -196,7 +263,9 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     if (newState) {
       openChatbox();
     } else {
-      // Clear all messages when closing the chatbox
+      // Save conversation before closing
+      saveConversation();
+
       setShowChatbox(false);
       setMessages([]);
       setNewMessages("");
@@ -225,7 +294,7 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     setMessages([...messages, newMessage]);
     const message = newMessages;
     setNewMessages("");
-    setIsLoading(true); // Show loading indicator
+    setIsLoading(true);
     botResponse(message);
   }
 
@@ -235,27 +304,151 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     }
   }
 
-  // Scroll to bottom whenever messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Function to start a new conversation
   function startNewConversation() {
-    // Generate a new session ID
+    // Save current conversation first
+    saveConversation();
+
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
     localStorage.setItem('dental_chat_session', newSessionId);
     
-    // Clear all messages
     setMessages([]);
     setNewMessages("");
     
-    // Add a welcome message from the bot
     const welcomeMessage = createWelcomeMessage();
     welcomeMessageRef.current = welcomeMessage;
     setMessages([welcomeMessage]);
   }
+
+  // Function to start voice recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          const base64data = reader.result?.toString().split(',')[1];
+          
+          if (base64data) {
+            setIsLoading(true);
+            
+            try {
+              // Send audio to transcribe endpoint
+              const transcribeResponse = await axios.post("http://localhost:8000/transcribe", {
+                audio: base64data,
+                content_type: 'audio/webm'
+              });
+              
+              if (transcribeResponse.data.text) {
+                const transcribedText = transcribeResponse.data.text;
+                
+                // Add user message with transcribed text
+                const newMessage: Message = {
+                  id: Date.now(),
+                  text: transcribedText,
+                  time: new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  date: new Date().toLocaleDateString(),
+                  sender: "user",
+                  status: "sent",
+                };
+                
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+                botResponse(transcribedText);
+              } else {
+                setIsLoading(false);
+                console.error("Could not transcribe audio");
+              }
+            } catch (error) {
+              setIsLoading(false);
+              console.error("Error transcribing audio:", error);
+            }
+          }
+        };
+        
+        // Stop all tracks on the stream
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
+
+  // Function to stop recording
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  // Make saveConversation function stable with useCallback to avoid dependency issues
+  const saveConversation = useCallback(async () => {
+    if (messages.length > 1 && sessionId) { // Only save if there are actual messages
+      try {
+        await axios.post("http://localhost:8000/save-conversation", {
+          session_id: sessionId,
+          messages: messages.map(msg => ({
+            text: msg.text,
+            time: msg.time, 
+            date: msg.date,
+            sender: msg.sender
+          }))
+        });
+        console.log("Conversation saved to S3");
+      } catch (error) {
+        console.error("Error saving conversation:", error);
+      }
+    }
+  }, [messages, sessionId]);
+
+  // Clean up resources when component unmounts
+  useEffect(() => {
+    return () => {
+      // Stop any playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      
+      // Stop any ongoing recording
+      if (mediaRecorderRef.current && isRecording) {
+        mediaRecorderRef.current.stop();
+      }
+      
+      // Save conversation
+      saveConversation();
+    };
+  }, [isRecording, saveConversation]);
+
+  useEffect(() => {
+    if (!showChatbox && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlayingAudio(null);
+    }
+  }, [showChatbox]);
 
   return (
     <div className='chatbot'>
@@ -263,9 +456,19 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
         <div className='chatbot-container'>
           <div className='chatbot-header'>
             <h3>Dental Assistant</h3>
-            <button className='close-chat' onClick={() => updateShowChatbox(false)}>
-              X
-            </button>
+            <div className="chatbot-controls-header">
+              <label className="auto-speak-toggle">
+                <input 
+                  type="checkbox" 
+                  checked={autoSpeakResponses} 
+                  onChange={() => setAutoSpeakResponses(!autoSpeakResponses)} 
+                />
+                <span className="toggle-label">Auto-speak</span>
+              </label>
+              <button className='close-chat' onClick={() => updateShowChatbox(false)}>
+                X
+              </button>
+            </div>
           </div>
 
           <div className='chatbot-messages'>
@@ -276,8 +479,20 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
                   message.sender === "user" ? "user" : "bot"
                 }`}
               >
-                {message.text}
-                <div className='message-time'>{message.time}</div>
+                <div className="message-text">{message.text}</div>
+                <div className='message-footer'>
+                  <div className='message-time'>{message.time}</div>
+                  {message.sender === "bot" && (
+                    <button 
+                      className='listen-button'
+                      onClick={() => textToSpeech(message.text, message.id)} 
+                      disabled={isPlayingAudio !== null}
+                      aria-label="Listen to message"
+                    >
+                      {isPlayingAudio === message.id ? 'Playing...' : 'Listen'}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
             
@@ -316,12 +531,19 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
                   addMessage();
                 }
               }}
-              disabled={isLoading}
+              disabled={isLoading || isRecording}
             />
+            <button
+              className={`voice-input-button ${isRecording ? 'recording' : ''}`}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isLoading}
+            >
+              {isRecording ? '🔴 Stop' : '🎤'}
+            </button>
             <button
               className='send-message-button'
               onClick={addMessage}
-              disabled={isLoading}
+              disabled={isLoading || isRecording}
             >
               Send
             </button>

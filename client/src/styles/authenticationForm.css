@@ -1,0 +1,61 @@
+.section-auth {
+  /* background-color: #9a616d; */
+  margin: 0;
+  border-radius: 20px;
+}
+
+body {
+  background-color: #92a6b7 !important;
+}
+
+.image-auth {
+  border-radius: 20px 0 0 20px;
+  height: 50vh;
+  object-fit: cover;
+  width: 100%;
+}
+
+i {
+  color: #ff6219;
+}
+
+h5 {
+  letter-spacing: 1px;
+}
+
+a {
+  color: #393f81;
+  text-decoration: none;
+}
+
+.clinic-name {
+  margin: 40px 0;
+  font-size: 4rem;
+  font-weight: 700;
+}
+
+.register-link {
+  color: #393f81;
+}
+
+.card-auth {
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.button {
+  background-color: #92a6b7 !important;
+  border-color: #92a6b7 !important;
+  border-radius: 20px !important;
+  float: right !important;
+}
+
+.button:hover {
+  background-color: #92a6b7 !important;
+  border-color: #92a6b7 !important;
+}
+
+.nav-tabs .nav-link,
+.nav-tabs .nav-link:hover {
+  color: #92a6b7;
+}

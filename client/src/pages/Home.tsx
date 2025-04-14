@@ -8,14 +8,22 @@ export default function Home({ onBookAppointment }: HomeProps) {
   return (
     <div>
       <header>
-        <h1>
-          PASTE
-          <br />
-          DENTAL
-        </h1>
+        <div className='navbar'>
+          <h1>
+            PASTE
+            <br />
+            DENTAL
+          </h1>
+          <div className='navbar-links'>
+            <a href='#home'>Home</a>
+            <a href='#services'>Services</a>
+            <a href='#contact'>Contact</a>
+            <a href='/auth'>Login</a>
+          </div>
+        </div>
       </header>
 
-      <section className='hero'>
+      <section className='hero' id='home'>
         <div className='hero-text'>
           <p>Dental Care Expert Located in the Heart of Toronto</p>
           <h2>
@@ -47,7 +55,7 @@ export default function Home({ onBookAppointment }: HomeProps) {
         </div>
       </section>
 
-      <section className='oral-health'>
+      <section className='oral-health' id='services'>
         <img src='dental-tools.webp' alt='Dental Tools' />
         <h2>Elevating Oral Health with Personalized Services</h2>
 
@@ -89,7 +97,7 @@ export default function Home({ onBookAppointment }: HomeProps) {
         </div>
       </section>
 
-      <section className='contact'>
+      <section className='contact' id='contact'>
         <div className='text'>
           <h2>Contact Us</h2>
           <p>Phone: (123) 456-7890</p>

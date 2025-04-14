@@ -9,6 +9,7 @@ interface Message {
   date: string;
   sender: "user" | "bot";
   status?: "sent" | "received" | "seen" | "ok";
+  audioUrl?: string; // Optional property for audio URL
 }
 
 interface ChatbotProps {
@@ -29,14 +30,14 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   // Generate or retrieve a session ID when the component mounts
   useEffect(() => {
     // Try to get existing session ID from localStorage
-    const storedSessionId = localStorage.getItem('dental_chat_session');
+    const storedSessionId = localStorage.getItem("dental_chat_session");
     if (storedSessionId) {
       setSessionId(storedSessionId);
     } else {
       // Generate a new session ID
       const newSessionId = crypto.randomUUID();
       setSessionId(newSessionId);
-      localStorage.setItem('dental_chat_session', newSessionId);
+      localStorage.setItem("dental_chat_session", newSessionId);
     }
   }, []);
 
@@ -44,12 +45,13 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   const createWelcomeMessage = useCallback((): Message => {
     return {
       id: Date.now(),
-      text: "Welcome to our Dental Assistant Chatbot! I can help you with:\n\n" +
-            "• Booking appointments\n" +
-            "• Information about our dental services\n" +
-            "• Answering questions about dental procedures\n\n" +
-            "To book an appointment, simply type \"I'd like to book an appointment\" or ask me about our available services.\n\n" +
-            "How can I assist you today?",
+      text:
+        "Welcome to our Dental Assistant Chatbot! I can help you with:\n\n" +
+        "• Booking appointments\n" +
+        "• Information about our dental services\n" +
+        "• Answering questions about dental procedures\n\n" +
+        'To book an appointment, simply type "I\'d like to book an appointment" or ask me about our available services.\n\n' +
+        "How can I assist you today?",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -62,14 +64,14 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   // Open chatbox and show welcome message
   const openChatbox = useCallback(() => {
     setShowChatbox(true);
-    
+
     // Add welcome message if there are no messages
     if (messages.length === 0) {
       const welcomeMessage = createWelcomeMessage();
       welcomeMessageRef.current = welcomeMessage;
       setMessages([welcomeMessage]);
     }
-    
+
     setTimeout(scrollToBottom, 100);
   }, [messages, createWelcomeMessage]);
 
@@ -81,32 +83,87 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   }, [open, openChatbox]);
 
   // Send message to bot and get response
-  const botResponse = useCallback(async (message: string) => {
-    try {
-      // Update the axios request with proper CORS configuration
-      const response = await axios.post("http://localhost:8085/chat", {
-        message: message,
-        session_id: sessionId
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        withCredentials: false // Set to false for development
-      });
-      
-      let botMessage: Message;
+  const botResponse = useCallback(
+    async (message: string) => {
+      try {
+        // Update the axios request with proper CORS configuration
+        const response = await axios.post(
+          "http://localhost:8085/chat",
+          {
+            message: message,
+            session_id: sessionId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            withCredentials: false, // Set to false for development
+          }
+        );
 
-      // Update the session ID if returned
-      if (response.data.session_id) {
-        setSessionId(response.data.session_id);
-        localStorage.setItem('dental_chat_session', response.data.session_id);
-      }
+        let botMessage: Message;
 
-      if (response.data.status === "ok") {
-        botMessage = {
+        // Update the session ID if returned
+        if (response.data.session_id) {
+          setSessionId(response.data.session_id);
+          localStorage.setItem("dental_chat_session", response.data.session_id);
+        }
+
+        if (response.data.status === "ok") {
+          if (response.data.audio_base64) {
+            // Handle audio data
+            const audioBlob = base64ToBlob(
+              response.data.audio_base64,
+              "audio/mpeg"
+            );
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            botMessage = {
+              id: Date.now() + 1,
+              text: response.data.text,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              date: new Date().toLocaleDateString(),
+              sender: "bot",
+              audioUrl: audioUrl, // Store audio URL
+            };
+          } else {
+            // Handle text-only response
+            botMessage = {
+              id: Date.now() + 1,
+              text: response.data.text,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              date: new Date().toLocaleDateString(),
+              sender: "bot",
+            };
+          }
+        } else {
+          console.error("Error: ", response.data.text);
+          botMessage = {
+            id: Date.now() + 1,
+            text: "Sorry, I couldn't understand your message. Can you try again?",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            date: new Date().toLocaleDateString(),
+            sender: "bot",
+          };
+        }
+
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      } catch (error) {
+        console.error("Error communicating with the server:", error);
+
+        const errorMessage: Message = {
           id: Date.now() + 1,
-          text: response.data.text,
+          text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -114,55 +171,44 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           date: new Date().toLocaleDateString(),
           sender: "bot",
         };
-      } else {
-        console.error("Error: ", response.data.text);
-        botMessage = {
-          id: Date.now() + 1,
-          text: "Sorry, I couldn't understand your message. Can you try again?",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          date: new Date().toLocaleDateString(),
-          sender: "bot",
-        };
-      }
 
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
-    } catch (error) {
-      console.error("Error communicating with the server:", error);
-      
-      // Add an error message to the chat
-      const errorMessage: Message = {
-        id: Date.now() + 1,
-        text: "Sorry, I'm having trouble connecting to the server. Please try again later.",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        date: new Date().toLocaleDateString(),
-        sender: "bot",
-      };
-      
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
-    } finally {
-      setIsLoading(false); // Hide loading indicator
+        setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sessionId]
+  );
+
+  const base64ToBlob = (base64Data: string, contentType: string): Blob => {
+    const byteCharacters = atob(base64Data);
+    const byteArrays: Uint8Array[] = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
     }
-  }, [sessionId]);
+    return new Blob(byteArrays, { type: contentType });
+  };
 
   // Handle initial message if provided (e.g., from Book Appointment button)
   useEffect(() => {
     if (initialMessage && showChatbox && !initialMessageSentRef.current) {
       // Mark that we've processed this message
       initialMessageSentRef.current = true;
-      
+
       // Make sure we have a welcome message first
       if (messages.length === 0) {
         const welcomeMessage = createWelcomeMessage();
         welcomeMessageRef.current = welcomeMessage;
         setMessages([welcomeMessage]);
       }
-      
+
       // Add a small delay before sending the initial message to allow the welcome message to be seen
       setTimeout(() => {
         const initialUserMessage: Message = {
@@ -176,12 +222,18 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
           sender: "user",
           status: "sent",
         };
-        
-        setMessages(prevMessages => [...prevMessages, initialUserMessage]);
+
+        setMessages((prevMessages) => [...prevMessages, initialUserMessage]);
         botResponse(initialMessage);
       }, 1000);
     }
-  }, [initialMessage, showChatbox, messages, createWelcomeMessage, botResponse]);
+  }, [
+    initialMessage,
+    showChatbox,
+    messages,
+    createWelcomeMessage,
+    botResponse,
+  ]);
 
   // Reset the initialMessageSentRef when initialMessage changes or chatbox closes
   useEffect(() => {
@@ -192,7 +244,7 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
 
   function updateShowChatbox(shouldShow?: boolean) {
     const newState = shouldShow !== undefined ? shouldShow : !showChatbox;
-    
+
     if (newState) {
       openChatbox();
     } else {
@@ -245,12 +297,12 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
     // Generate a new session ID
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-    localStorage.setItem('dental_chat_session', newSessionId);
-    
+    localStorage.setItem("dental_chat_session", newSessionId);
+
     // Clear all messages
     setMessages([]);
     setNewMessages("");
-    
+
     // Add a welcome message from the bot
     const welcomeMessage = createWelcomeMessage();
     welcomeMessageRef.current = welcomeMessage;
@@ -263,7 +315,10 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
         <div className='chatbot-container'>
           <div className='chatbot-header'>
             <h3>Dental Assistant</h3>
-            <button className='close-chat' onClick={() => updateShowChatbox(false)}>
+            <button
+              className='close-chat'
+              onClick={() => updateShowChatbox(false)}
+            >
               X
             </button>
           </div>
@@ -277,26 +332,27 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
                 }`}
               >
                 {message.text}
+                {message.audioUrl && <audio src={message.audioUrl} controls />}
                 <div className='message-time'>{message.time}</div>
               </div>
             ))}
-            
+
             {isLoading && (
-              <div className="message bot loading">
-                <div className="typing-indicator">
+              <div className='message bot loading'>
+                <div className='typing-indicator'>
                   <span></span>
                   <span></span>
                   <span></span>
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
           <div className='chatbot-controls'>
-            <button 
-              className='new-conversation-button' 
+            <button
+              className='new-conversation-button'
               onClick={startNewConversation}
               disabled={isLoading}
             >

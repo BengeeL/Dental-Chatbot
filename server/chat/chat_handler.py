@@ -1,11 +1,12 @@
 import uuid
 import logging
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional
 from database.redis import get_redis_client
 import json
 from utils.lex_utils import init_lex_client, send_message_to_lex
+from utils.speech_service import SpeechService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -22,6 +23,7 @@ class ChatResponse(BaseModel):
     text: str
     intent: Optional[str] = None
     status: str
+    audio_base64: Optional[str] = None # Add audio_base64 to the response
 
 @router.post("/chat")
 async def process_chat_message(request: ChatMessage):
@@ -40,11 +42,15 @@ async def process_chat_message(request: ChatMessage):
         
         # Send the message to Lex
         lex_response = send_message_to_lex(session_id, request.message)
-        
+
         if "error" in lex_response:
             logger.error(f"Error from Lex: {lex_response['error']}")
             return {"text": lex_response["text"], "status": "error"}
         
+        # Request AWS Polly for the audio
+        speech_service = SpeechService()
+        audio_base64 = speech_service.generate_speech(lex_response["text"])
+
         # Store conversation state if user is identified
         if request.user_id:
             try:
@@ -66,7 +72,8 @@ async def process_chat_message(request: ChatMessage):
             "text": lex_response["text"],
             "intent": lex_response.get("intent"),
             "status": "ok",
-            "session_id": session_id
+            "session_id": session_id,
+            "audio_base64": audio_base64 
         }
         
     except Exception as e:

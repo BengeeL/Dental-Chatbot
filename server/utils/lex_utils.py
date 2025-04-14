@@ -77,6 +77,15 @@ def send_message_to_lex(session_id: str, message: str):
             }
     
     try:
+        print(f"Sending message to Lex: {message}")
+        
+        print(f"Lex Bot ID: {os.environ.get('LEX_BOT_ID')}")
+        print(f"Lex Bot Alias ID: {os.environ.get('LEX_BOT_ALIAS_ID')}")
+        print(f"Lex Bot Locale ID: {os.environ.get('LEX_BOT_LOCALE_ID', 'en_CA')}")
+        print(f"Session ID: {session_id}")
+        print(f"Message: {message}")
+
+        # Send message to Lex
         response = lex_client.recognize_text(
             botId=os.environ.get('LEX_BOT_ID'),
             botAliasId=os.environ.get('LEX_BOT_ALIAS_ID'),

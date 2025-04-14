@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import "@/styles/chatbot.css";
 import axios from "axios";
+import config from "../config";
 
 interface Message {
   id: number;
@@ -94,7 +95,7 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
       setIsPlayingAudio(messageId);
       console.log("Requesting speech synthesis for:", text.substring(0, 30) + "...");
       
-      const response = await axios.post("http://localhost:8000/speech", {
+      const response = await axios.post(`${config.API_BASE_URL}/speech`, {
         text: text,
         voice: "Joanna"
       });
@@ -147,7 +148,7 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   // Send message to bot and get response
   const botResponse = useCallback(async (message: string) => {
     try {
-      const response = await axios.post("http://localhost:8000/chat", {
+      const response = await axios.post(`${config.API_BASE_URL}/chat`, {
         message: message,
         session_id: sessionId
       }, {
@@ -351,8 +352,8 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
             setIsLoading(true);
             
             try {
-              // Send audio to transcribe endpoint
-              const transcribeResponse = await axios.post("http://localhost:8000/transcribe", {
+              // Send audio to transcribe endpoint - updated to use config
+              const transcribeResponse = await axios.post(`${config.API_BASE_URL}/transcribe`, {
                 audio: base64data,
                 content_type: 'audio/webm'
               });
@@ -409,7 +410,7 @@ export default function Chatbot({ initialMessage, open }: ChatbotProps) {
   const saveConversation = useCallback(async () => {
     if (messages.length > 1 && sessionId) { // Only save if there are actual messages
       try {
-        await axios.post("http://localhost:8000/save-conversation", {
+        await axios.post(`${config.API_BASE_URL}/save-conversation`, {
           session_id: sessionId,
           messages: messages.map(msg => ({
             text: msg.text,

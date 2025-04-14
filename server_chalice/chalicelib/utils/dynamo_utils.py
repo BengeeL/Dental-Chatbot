@@ -16,8 +16,8 @@ def init_dynamodb():
     """Initialize DynamoDB client"""
     global dynamodb
     try:
-        # Get region from environment variables or use default
-        region = os.environ.get('AWS_REGION', 'ca-central-1')
+        # Use Lambda environment AWS_REGION or get from our custom env var
+        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
         
         # Create DynamoDB resource using Lambda's IAM role
         dynamodb = boto3.resource('dynamodb', region_name=region)

@@ -14,8 +14,8 @@ def init_transcribe_client():
     """Initialize Amazon Transcribe client"""
     global transcribe_client
     try:
-        # Get region from environment variables or use default
-        region = os.environ.get('AWS_REGION', 'ca-central-1')
+        # Use Lambda environment AWS_REGION or get from our custom env var
+        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
         
         # Create Transcribe client using Lambda's IAM role
         transcribe_client = boto3.client('transcribe', region_name=region)

@@ -14,8 +14,8 @@ def init_lex_client():
     """Initialize Amazon Lex client using AWS Lambda's environment variables or IAM role"""
     global lex_client
     try:
-        # Get configs from environment variables (set during deployment)
-        region = os.environ.get('AWS_REGION', 'ca-central-1')
+        # Use Lambda environment AWS_REGION or get from our custom env var
+        region = boto3.session.Session().region_name or os.environ.get('DEFAULT_REGION', 'ca-central-1')
         
         # Store Lex bot configuration
         if not os.environ.get('LEX_BOT_ID'):
